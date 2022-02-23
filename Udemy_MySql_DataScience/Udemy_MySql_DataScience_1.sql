@@ -1360,6 +1360,10 @@ group by department;
 select department,(select max(salary) from employees where department = d.department)
 from departments d
 where 38 < (select count(*) from employees e2  where d.department = e2.department);
+/* ------ OR --------- */
+select department,(select max(salary) from employees where department = d.department)
+from departments d
+where  (select count(*) from employees e2  where d.department = e2.department) > 38 ;
 
 select department,first_name,salary,case when salary = maxdepartment then 'highest salary'
 when salary = mindepartment then 'lowest salary'
@@ -1372,5 +1376,102 @@ where salary = maxdepartment
 or salary = mindepartment
 order by department;
 
+/* ---- JOINS ------ */
+select * from departments;
 
+select first_name,email,division from employees
+join departments on departments.department = employees.department
+where email is not null;
+
+select * from regions;
+select regions.country,count(*) from employees,regions
+where employees.region_id = regions.region_id
+group by country;
+
+select distinct employees.department as employees_department,departments.department as departments_department
+from employees left join departments on employees.department = departments.department;
+
+select distinct employees.department as employees_department,departments.department as departments_department
+from employees right join departments on employees.department = departments.department;
+
+select employees.department from employees
+left join departments on employees.department = departments.department
+where employees.department not in (select employees.department from employees
+ join departments on employees.department = departments.department)
+ group by department;
+/* ----- OR ------ */
+select distinct employees.department as employees_department
+from employees left join departments on employees.department = departments.department
+where departments.department is null;
+
+select distinct employees.department as employees_department,departments.department as departments_department
+from employees full  join departments on employees.department = departments.department;
+
+select distinct department from employees
+union
+select department from departments;
+/* ---- UNION means stacking up by not returning the duplicates---- 
+         columns should match in both select statements both in terms of data types and no of columns as well
+        UNION ALL means just stacking up all data without deleting duplicates */
+select 	distinct department from employees
+union all
+select department from departments;
+/* ---- OR ----- */
+select 	 department from employees
+group by department
+union all
+select department from departments;
+
+select 	distinct department from employees
+/* except(- subtraction) function cannot be used in mysql but its use is returns rows returns rows from the first SELECT statement that are not returned by the second SELECT */
+select department from departments;
+
+select department,count(*) from employees
+group by department
+union all
+select 'total',count(*) from employees;
+
+select  a.department,count(*)   from (select distinct department from employees 
+union 
+select department from departments) a
+join employees on employees.department = a.department
+group by a.department;
+
+/* select * from employees a cross join departments b ----it is a  cartesian(multiplying) product, here department and division column are matching with berrie that he could be working in any of the departments */
+
+(select first_name,department,hire_date,country from employees 
+join regions on employees.region_id = regions.region_id
+where hire_date = (select min(hire_date) from employees e2) 
+limit 1)
+union
+select first_name,department,hire_date,country from employees 
+join regions on employees.region_id = regions.region_id
+where hire_date =(select max(hire_date) from employees)
+order by hire_date;
+/*     OR         */
+(select first_name,department,hire_date,country from employees 
+join regions on employees.region_id = regions.region_id
+order by hire_date asc limit 1)
+union 
+(select first_name,department,hire_date,country from employees 
+join regions on employees.region_id = regions.region_id
+order by hire_date desc limit 1);
+
+
+select hire_date,salary,
+(select sum(salary) from employees e2 
+where e2.hire_date between e.hire_date - 90 and e.hire_date) as spending_pattern
+from employees e
+order by hire_date;
+
+/* VIEWS (virtual ) - query saved in the database,it is not a 'TABLE',so we can't insert or delete or modify data from this */ 
+create view v_employee_information as
+select first_name,email,e.department,salary,division,region,country
+from employees e, departments d,regions r
+where e.department = d.department
+and e.region_id = r.region_id;
+
+select * from  v_employee_information;
+
+select * from(select * from departments) /* -- in line views query within from statement ------  */
 

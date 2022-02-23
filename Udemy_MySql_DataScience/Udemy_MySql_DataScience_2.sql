@@ -128,4 +128,9 @@ order by count(*) desc limit 1 ) as sq );
  
  select * from student_enrollment;
  
-select student_name,max(age) from students
+select student_name,max(age) from students;
+
+select s.student_no,s.student_name,c.course_title,t.last_name from students s
+join student_enrollment se on s.student_no = se.student_no
+join courses c on c.course_no = se.course_no
+join teach t on c.course_no = t.course_no;

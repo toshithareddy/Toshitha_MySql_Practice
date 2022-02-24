@@ -1473,5 +1473,63 @@ and e.region_id = r.region_id;
 
 select * from  v_employee_information;
 
-select * from(select * from departments) /* -- in line views query within from statement ------  */
+select * from(select * from departments) ;/* -- in line views query within from statement ------  */
 
+select first_name from employees e1
+where salary > (select avg(salary) from employees e
+where department = e1.department);
+/* ---- OR ----- */
+
+select first_name from employees e, (select department, avg(salary) salary from employees  group by department) f 
+where e.salary > f.salary
+and e.department= f.department;
+
+/* ---- WINDOW FUNCTIONS ---- */
+select first_name,department,(select count(*) from employees e2 where e2.department = e1.department)
+from employees e1
+order by department;
+/* -- OR -- */
+select first_name,department,
+count(*) over(partition by department)
+from employees;
+
+select first_name,department,
+sum(salary) over()     /* --- empty over() gives sum of all records in each reapective row but if you add condition inside over() it goes according to the condition - */
+from employees;
+
+select first_name,department,
+count(*) over(partition by department) dept_count,region_id,
+count(*) over(partition by region_id) region_count
+from employees;
+
+select first_name,department,count(*) over()
+from employees
+where region_id = 3;
+
+select first_name,department,count(*) over(partition by department)
+from employees
+where region_id = 3;
+
+select first_name,hire_date,salary,
+sum(salary) over(order by hire_date range between unbounded preceding and current row)as running_total_of_salaries
+from employees;  /* here order by is hire_date so common hire_dates are summed up if not only the current row is considered(below query) */
+
+select first_name,hire_date,salary,
+sum(salary) over(order by first_name range between unbounded preceding and current row)as running_total_of_salaries
+from employees;/* in sql range statment is by default */
+
+select first_name,hire_date,salary,
+sum(salary) over(order by hire_date)as running_total_of_salaries
+from employees;
+
+select first_name,hire_date,department,salary,
+sum(salary) over(partition by department order by hire_date)as running_total_of_salaries
+from employees;
+
+select first_name,hire_date,department,salary,
+sum(salary) over(order by hire_date rows between 1 preceding and current row)
+from employees;/* here it is just adding 'one' preceding row, no can be changed according to the requrirement */
+
+select first_name,hire_date,department,salary,
+rank() over(partition by department order by salary desc)
+from employees;

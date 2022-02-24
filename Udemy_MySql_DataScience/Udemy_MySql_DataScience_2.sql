@@ -130,7 +130,25 @@ order by count(*) desc limit 1 ) as sq );
  
 select student_name,max(age) from students;
 
-select s.student_no,s.student_name,c.course_title,t.last_name from students s
-join student_enrollment se on s.student_no = se.student_no
-join courses c on c.course_no = se.course_no
-join teach t on c.course_no = t.course_no;
+select * from student_enrollment se
+inner join students s on s.student_no = se.student_no
+inner join teach t on t.course_no = se.course_no 
+INNER JOIN professors p
+    ON t.last_name = p.last_name
+    order by s.student_name;
+/*  ---- OR ---- */
+
+SELECT student_name, se.course_no, p.last_name
+FROM students s
+INNER JOIN student_enrollment se
+    ON s.student_no = se.student_no
+INNER JOIN teach t
+    ON se.course_no = t.course_no
+INNER JOIN professors p
+    ON t.last_name = p.last_name
+    group by student_name,course_no
+ORDER BY student_name;
+
+SELECT s.student_no, student_name, course_no
+FROM students s LEFT JOIN student_enrollment se
+ON s.student_no = se.student_no

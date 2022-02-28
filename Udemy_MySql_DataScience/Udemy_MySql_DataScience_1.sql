@@ -1494,7 +1494,7 @@ count(*) over(partition by department)
 from employees;
 
 select first_name,department,
-sum(salary) over()     /* --- empty over() gives sum of all records in each reapective row but if you add condition inside over() it goes according to the condition - */
+sum(salary) over()     /* --- empty over() gives sum of all records in each respective row but if you add condition inside over() it goes according to the condition - */
 from employees;
 
 select first_name,department,
@@ -1533,3 +1533,89 @@ from employees;/* here it is just adding 'one' preceding row, no can be changed 
 select first_name,hire_date,department,salary,
 rank() over(partition by department order by salary desc)
 from employees;
+
+select * from
+(select first_name,hire_date,department,salary,
+rank()  over(partition by department order by salary desc) rank1
+from employees) a
+where rank1 = 8;
+
+select first_name,email,department,salary,
+ntile(5) over(partition by department order by salary desc)/* divides each department into 5 categories  */
+from employees;
+
+select first_name,email,department,salary,
+first_value(salary) over(partition by department order by salary desc)/* gives 1st values with respect to each department and depends on order by*/
+from employees;
+/* similar to max(salary) in the place of first_value */
+
+select first_name,email,department,salary,
+nth_value(salary,5) over(partition by department order by salary desc)/* gives 5th value and the column mentioned with respect to each department and depends on order by*/
+from employees;
+
+select first_name,last_name,salary,
+lead(salary) over() next_salary
+from employees;
+
+select first_name,last_name,salary,
+lag(salary) over() next_salary
+from employees;
+
+select department,last_name,salary,
+lag(salary) over (order by salary desc) closest_higher_salary
+from employees;
+
+select department,last_name,salary,
+lag(salary) over (partition by department order by salary desc) closest_higher_salary
+from employees;
+
+/*  ----- ROLLUPS AND CUBES ---- */
+ CREATE TABLE sales
+(
+	continent varchar(20),
+	country varchar(20),
+	city varchar(20),
+	units_sold integer
+);
+
+INSERT INTO sales VALUES ('North America', 'Canada', 'Toronto', 10000);
+INSERT INTO sales VALUES ('North America', 'Canada', 'Montreal', 5000);
+INSERT INTO sales VALUES ('North America', 'Canada', 'Vancouver', 15000);
+INSERT INTO sales VALUES ('Asia', 'China', 'Hong Kong', 7000);
+INSERT INTO sales VALUES ('Asia', 'China', 'Shanghai', 3000);
+INSERT INTO sales VALUES ('Asia', 'Japan', 'Tokyo', 5000);
+INSERT INTO sales VALUES ('Europe', 'UK', 'London', 6000);
+INSERT INTO sales VALUES ('Europe', 'UK', 'Manchester', 12000);
+INSERT INTO sales VALUES ('Europe', 'France', 'Paris', 5000);
+
+select * from sales
+order by continent,country,city;
+
+select continent, sum(units_sold)
+from sales 
+group by continent;
+
+select country, sum(units_sold)   /* ---- these 3 grouping querires can be wriiten in one query ---- */
+from sales 
+group by country;
+
+select city, sum(units_sold)
+from sales 
+group by city;
+
+select continent,country,city,sum(units_sold)
+from sales                                     /* here it groups by all 3 columns and a summs up with respect to grouped cloumns */
+group by grouping sets (continent,country,city)
+
+select continent,country,city,sum(units_sold)
+from sales                                      /* here in the first row because of () it summs up all units_sold and later it groups by all 3 columns and a summs up with respect to grouped cloumns */
+group by grouping sets (continent,country,city,())
+
+select continent,country,city,sum(units_sold)
+from sales                                   /* here it groups all columns later it groups first two columns later groups single columns */
+group by rollup(continent,country,city)
+
+
+select continent,country,city,sum(units_sold)
+from sales                                   /* here it groups by all possible combinations of columns */
+group by rollup(continent,country,city)

@@ -91,5 +91,4 @@ SUM(CASE WHEN season = 'Fall' THEN total_cost end) as Spring_total,
 SUM(CASE WHEN season = 'All Year' THEN total_cost end) as Spring_total
 from(select season,(supply) * (cost_per_unit) as total_cost
 from fruit_imports
-group by season,total_cost) a
-
+group by season,total_cost) 

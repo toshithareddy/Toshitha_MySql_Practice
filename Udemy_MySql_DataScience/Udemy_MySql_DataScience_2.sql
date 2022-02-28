@@ -151,4 +151,50 @@ ORDER BY student_name;
 
 SELECT s.student_no, student_name, course_no
 FROM students s LEFT JOIN student_enrollment se
-ON s.student_no = se.student_no
+ON s.student_no = se.student_no;
+
+select * from students 
+where student_no not in(select student_no from student_enrollment
+where course_no = 'cs180');
+    /* OR */
+SELECT s.student_no, s.student_name, s.age
+FROM students s LEFT JOIN student_enrollment se
+    ON s.student_no = se.student_no
+GROUP BY s.student_no, s.student_name, s.age
+HAVING MAX(CASE WHEN se.course_no = 'CS180'
+           THEN 1 ELSE 0 END) = 0
+           
+SELECT s.*
+FROM students s, student_enrollment se
+WHERE s.student_no = se.student_no
+AND se.course_no IN ('CS110', 'CS107')
+AND s.student_no NOT IN ( SELECT a.student_no
+                          FROM student_enrollment a, student_enrollment b
+                          WHERE a.student_no = b.student_no
+                          AND a.course_no = 'CS110'
+                          AND b.course_no = 'CS107')
+                          
+SELECT s.*
+FROM students s, student_enrollment se
+WHERE s.student_no = se.student_no
+AND s.student_no not in(select student_no from student_enrollment
+where course_no != 'cs220')
+
+ select *,count(*) from students s,student_enrollment se
+where  s.student_no = se.student_no
+group by s.student_no 
+having count(*)<= 2
+									
+select *,count(*) from students
+group by age
+order by age desc
+
+SELECT s1.*
+
+FROM students s1
+
+WHERE 2 >= (SELECT count(*)
+
+                FROM students s2
+
+                WHERE s2.age < s1.age)
